@@ -11,6 +11,8 @@ int8 *readkey(char *prompt){
     printf("%s",prompt);
     fflush(stdout);
 
+    changeecho(false);
+
     memset(buf,0,256);
     read(0,buf,255);
     size=(int8)strlen(buf);
@@ -20,10 +22,42 @@ int8 *readkey(char *prompt){
     p=(int8* )malloc(size);
     assert(p);
     strncpy((char*)p,buf,idx);
+    changeecho(true);
+
     return p;
-
 }
+/*
+void changeecho(bool enabled){
+    struct termios *t;
+    t = (struct termios *)malloc(sizeof(struct termios));
 
+    /*int tcgetattr(int fd, struct termios *termios_p);
+       int tcsetattr(int fd, int optional_actions,
+                     const struct termios *termios_p);
+
+    tcgetattr(0, t);
+    if(enabled){
+    t->c_lflag |= ECHO;
+        
+    }
+    else{
+        t->c_lflag &= ECHO;
+
+    }
+    tcsetattr(0, 0, t);
+    free(t);
+    return;
+}*/
+void changeecho(bool enabled) {
+    struct termios t; // No need to malloc for a single struct
+    tcgetattr(STDIN_FILENO, &t);
+    if (enabled) {
+        t.c_lflag |= ECHO;
+    } else {
+        t.c_lflag &= ~ECHO; // Correctly disable ECHO
+    }
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
 
 
 int8* securerand(int16 size){
@@ -107,7 +141,7 @@ int main(int argc,char *argv[]){
         padsize8=securerand(2);
         padsize16=(int16 *)padsize8;
         padsize=*padsize16;
-        printf("padsize: %d\n",(int)padsize);
+        //printf("padsize: %d\n",(int)padsize);
         
         close(infd);
         close(outfd);
