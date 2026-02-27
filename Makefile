@@ -1,9 +1,20 @@
-all: fse
-fse:fse.o
+flags=-O2 -Wall -std=c2x
+ldflags=-larcfour
+
+.PHONY:all clean
+all: clean  fse fsd
+
+fse:fse.o 
 	gcc fse.o -o fse
 
-fse.o: fse.c
-	gcc -c fse.c
+fsd:fsd.o
+	gcc $(flags) $^ -o  $@ $(ldflags)
+
+fsd.o: fsd.c fsd.h
+	gcc $(flags) -c $^
+
+fse.o: fse.c fse.h
+	gcc -c fse.c $<
 
 clean: 
-	rm -f *.so *.o
+	rm -f *.so *.o fse fsd
